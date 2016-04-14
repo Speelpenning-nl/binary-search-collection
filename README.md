@@ -12,7 +12,7 @@ This package is useful when working with large data sets that contain objects wi
 
 ### Requirements
 
-* illuminate-support: >= 5.0
+* illuminate/support: >= 5.0
 
 ### Installation
 
