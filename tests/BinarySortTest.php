@@ -47,7 +47,7 @@ class BinarySortTest extends PHPUnit_Framework_TestCase
 
         // Create a collection with a large population.
         $stopwatch->start('creation');
-        $collection = $this->createCollection(250000);
+        $collection = $this->createCollection(100000);
         $creation = $stopwatch->stop('creation');
         var_dump("\nIt took me {$creation->getDuration()}ms to create a collection of {$collection->count()} items.\n");
 
