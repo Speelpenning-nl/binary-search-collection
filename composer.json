@@ -7,7 +7,7 @@
     "require-dev": {
         "fzaninotto/faker": "^1.5",
         "phpunit/phpunit": "~4.8",
-        "symfony/stopwatch": "^3.0"
+        "symfony/stopwatch": "^2.8"
     },
     "license": "MIT",
     "authors": [
