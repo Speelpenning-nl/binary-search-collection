@@ -34,7 +34,7 @@ class Collection extends LaravelCollection
         // for. This is done recursively by passing on the key to search
         // on, the value to look for, the sorted collection and the
         // index key of the first and last item in the collection.
-        $pointer = $this->getPointerUsingBinarySearch($key, $value, $this, 0, $this->count() - 1);
+        $pointer = $this->getPointerUsingBinarySearch($key, $value, 0, $this->count() - 1);
 
         // Return the item corresponding with the found pointer. If no
         // pointer was found, the default value is returned.
@@ -66,28 +66,27 @@ class Collection extends LaravelCollection
      *
      * @param  string  $key
      * @param  mixed  $value
-     * @param  LaravelCollection  $items
      * @param  int  $left
      * @param  int  $right
      * @return int|null
      */
-    protected function getPointerUsingBinarySearch($key, $value, LaravelCollection $items, $left, $right)
+    protected function getPointerUsingBinarySearch($key, $value, $left, $right)
     {
         if ($left > $right) {
             return null;
         }
 
         $mid = (int)(($left + $right) / 2);
-        $itemValue = data_get($items->get($mid), $key);
+        $itemValue = data_get($this->items[$mid], $key);
 
         if ($itemValue === $value) {
             return $mid;
         }
         elseif ($itemValue > $value) {
-            return $this->getPointerUsingBinarySearch($key, $value, $items, $left, $mid - 1);
+            return $this->getPointerUsingBinarySearch($key, $value, $left, $mid - 1);
         }
         elseif ($itemValue < $value) {
-            return $this->getPointerUsingBinarySearch($key, $value, $items, $mid + 1, $right);
+            return $this->getPointerUsingBinarySearch($key, $value, $mid + 1, $right);
         }
     }
 }
