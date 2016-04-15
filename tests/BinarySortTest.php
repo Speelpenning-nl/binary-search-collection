@@ -40,6 +40,13 @@ class BinarySortTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($random, $found);
     }
 
+    public function testEmptyCollections()
+    {
+        $collection = new Collection();
+
+        $this->assertNull($collection->find('key', 1));
+    }
+
     public function testItIsFasterThanSequentialSearchOnLargeDataSets()
     {
         // We want to measure performance, so we need a stopwatch.
