@@ -27,24 +27,89 @@ If you have structured data stored in different formats like csv and XML and you
 report. The only thing you need to do is to define some models and create a reader which returns a collection 
 with the models.
 
-## Example
-
--- Will be completed with code examples soon --
+### Example use case
 
 Say we have the the following files:
 
 * An XML file with 200.000 products (product number, description, etc.)
 * A csv price list with 70.000 prices (product number, gross price, net price, list price)
 
-For spreading a price list to "our customers" we need to make a csv file with product number, description, 
+For sending a price list to "our customers" we need to make a csv file with product number, description, 
 list price and gross price. 
 
-First we need two models, say Product and RawPrice, which hold the attributes as defined in the files. Next, we create 
-a reader for the XML (ie. ProductsReader) file and the csv file (ie. RawPriceReader). The readers accept a binary 
+First we need two models, say Product and Price, which hold the attributes as defined in the files. Next, we create 
+a reader for the XML (ie. ProductsReader) file and the csv file (ie. PriceReader). The readers accept a binary 
 sort collection in the constructor and fills the collection with models from the file. The collections is returned 
 by the readers.
 
-Now we come near our goal: write a csv price list for our customers. For this, we create a writer (say 
-CustomerPriceWriter), which accepts both readers in the constructor. The writer iterates over the collection with 
-RawPrice models, while finding the Product records in the other collection using binary search. Then the data from
-both models is combined and written to the csv file with customer prices.
+Now we come near our goal: generating a csv price list for our customers. For this, we create a writer (say 
+CustomerPriceListWriter), which accepts both readers in the constructor. The writer iterates over the collection 
+with Price models, while finding the Product records in the other collection using binary search. Then the data 
+from both models is combined and written to the csv file with customer prices.
+
+```php
+<?php
+
+class CustomerPriceListWriter
+{
+    /**
+     * @var ProductReader
+     */
+    protected $productReader;
+
+    /**
+     * @var PriceReader
+     */
+    protected $priceReader;
+
+    /**
+     * Create a new customer price list writer instance.
+     *
+     * @param ProductReader $productReader
+     * @param PriceReader $priceReader
+     */
+    public function __construct(ProductReader $productReader, PriceReader $priceReader)
+    {
+        $this->productReader = $productReader;
+        $this->priceReader = $priceReader;
+    }
+
+
+    protected function write($productsFilename, $pricesFilename, $targetFilename = null)
+    {
+        // First we read the products and prices file, which both
+        // return a collection that supports binary search.
+        $products = $this->productReader->read($productsFilename);
+        $prices = $this->priceReader->read($pricesFilename);
+
+        // Prepare the array with CSV lines.
+        $csv = [$this->toCsv([
+            'Product Number',
+            'Description',
+            'List price',
+            'Your price'
+        ])];
+        foreach ($prices as $price) {
+            $product = $products->find($price->product_number);
+
+            $csv[] = $this->toCsv([
+                $product->product_number,
+                $product->description,
+                $price->list_price,
+                $price->gross_price
+            ]);
+        }
+
+        $targetFilename = is_null($targetFilename) ? 'customer-prices-'.date('YmdHis').'.csv' : $targetFilename;
+        file_put_contents($targetFilename, implode("\n", $csv));
+    }
+
+    protected function toCsv(array $values)
+    {
+        foreach ($values as $key => $value) {
+            $value[$key] = is_numeric($value) ? $value : "\"{$value}\"";
+        }
+        return implode(',', $values);
+    }
+}
+```
